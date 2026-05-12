@@ -125,6 +125,15 @@ public class Fraction {
         return numerator.equals(BigInteger.ZERO);
     }
 
+    /**
+     * Проверить, что простая дробь равна единице.
+     *
+     * @return {@code true} если числитель и знаменатель равны единице; иначе {@code false}.
+     */
+    public boolean isOne() {
+        return numerator.equals(BigInteger.ONE) && denominator.equals(BigInteger.ONE);
+    }
+
     @Override
     public String toString() {
         return denominator.equals(BigInteger.ONE) ? numerator.toString() : numerator + "/" + denominator;
