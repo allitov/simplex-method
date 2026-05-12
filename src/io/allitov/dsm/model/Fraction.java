@@ -1,4 +1,4 @@
-package io.allitov.dsm.fraction;
+package io.allitov.dsm.model;
 
 import java.math.BigInteger;
 
