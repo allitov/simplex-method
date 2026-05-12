@@ -104,6 +104,15 @@ public class Fraction {
     }
 
     /**
+     * Вернуть противоположное по знаку значение дроби.
+     *
+     * @return противоположная по знаку простая дробь.
+     */
+    public Fraction negate() {
+        return Fraction.of(this.numerator.negate(), this.denominator);
+    }
+
+    /**
      * Сравнить дроби по модулю.
      *
      * @param other простая дробь, с которой нужно сравнить текущую.
