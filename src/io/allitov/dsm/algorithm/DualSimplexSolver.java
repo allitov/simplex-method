@@ -144,7 +144,7 @@ public class DualSimplexSolver {
 
     private boolean isDualFeasible(Fraction[][] table) {
         int zRowIndex = table.length - 1;
-        int cols = table[0].length;
+        int cols = table[0].length - 1;
 
         for (int col = 0; col < cols; col++) {
             if (table[zRowIndex][col].isNegative()) {
@@ -218,7 +218,7 @@ public class DualSimplexSolver {
                     break;
                 }
             }
-            if (!isBasis && table[zRowIndex][col].isPositive()) {
+            if (!isBasis && table[zRowIndex][col].isZero()) {
                 LogWriter.printMessage("Обнаружено бесконечное множество решений. Поиск альтернативного.");
                 int pivotRow = -1;
                 for (int i = 0; i < table.length - 1; i++) {
