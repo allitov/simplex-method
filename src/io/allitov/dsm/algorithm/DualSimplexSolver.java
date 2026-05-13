@@ -232,6 +232,8 @@ public class DualSimplexSolver {
                     Fraction[][] altTable = gaussStep(table, pivotRow, col);
                     int[] altBasis = basis.clone();
                     altBasis[pivotRow] = col;
+                    LogWriter.printHeader("Альтернативное решение");
+                    LogWriter.printTable(altTable, altBasis, null);
                     LogWriter.printResult("Решение 2 (альтернативное)", altTable, altBasis);
                     return;
                 } else {

@@ -30,7 +30,7 @@ public final class LogWriter {
         for (int j = 0; j < cols - 1; j++) {
             System.out.printf("%" + colWidth + "s", "x" + (j + 1));
         }
-        System.out.printf("|%" + colWidth + "s", "b");
+        System.out.printf("|%" + colWidth + "s", "1");
         System.out.println();
         System.out.println("-".repeat(8 + colWidth * cols + 2));
 
