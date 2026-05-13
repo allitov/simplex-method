@@ -5,15 +5,35 @@ import io.allitov.dsm.model.Problem;
 
 import java.util.Arrays;
 
+/**
+ * Реализация двойственного симплекс-метода.
+ */
 public class DualSimplexSolver {
 
+    /**
+     * Решить задачу линейного программирования.
+     *
+     * @param problem задача, которую нужно решить.
+     */
     public void solve(Problem problem) {
         int[] basis = findBasis(problem.constraints());
         IO.println("Basis: " + Arrays.toString(basis));
 
         Fraction[][] table = prepareTable(problem, basis);
         IO.println("Table: " + Arrays.deepToString(table));
-        // todo: проверить применимость метода
+
+        if (!isDualFeasible(table)) {
+            IO.println("Ошибка: Задача не является двойственно допустимой.");
+            return;
+        }
+
+        if (!hasNegativeB(table)) {
+            IO.println("Решение уже оптимально, итерации не требуются.");
+            // todo: вывести результат
+            return;
+        }
+
+        IO.println("Условия соблюдены. Алгоритм применим.");
         // todo: найти ведущий элемент
         // todo: выполнить переход
         // todo: проверить, не решение ли это
@@ -91,5 +111,31 @@ public class DualSimplexSolver {
             }
         }
         return nextTable;
+    }
+
+    private boolean isDualFeasible(Fraction[][] table) {
+        int zRowIndex = table.length - 1;
+        int cols = table[0].length;
+
+        for (int col = 0; col < cols; col++) {
+            if (table[zRowIndex][col].isNegative()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean hasNegativeB(Fraction[][] table) {
+        int rows = table.length - 1;
+        int bColIndex = table[0].length - 1;
+
+        for (int row = 0; row < rows; row++) {
+            if (table[row][bColIndex].isNegative()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -143,6 +143,15 @@ public class Fraction {
         return numerator.equals(BigInteger.ONE) && denominator.equals(BigInteger.ONE);
     }
 
+    /**
+     * Проверить, что простая дробь отрицательная.
+     *
+     * @return {@code true} если числитель отрицательный; иначе {@code false}.
+     */
+    public boolean isNegative() {
+        return numerator.signum() == -1;
+    }
+
     @Override
     public String toString() {
         return denominator.equals(BigInteger.ONE) ? numerator.toString() : numerator + "/" + denominator;
