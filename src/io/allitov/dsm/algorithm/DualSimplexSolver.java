@@ -34,9 +34,27 @@ public class DualSimplexSolver {
         }
 
         IO.println("Условия соблюдены. Алгоритм применим.");
-        // todo: найти ведущий элемент
-        // todo: выполнить переход
-        // todo: проверить, не решение ли это
+
+        while (hasNegativeB(table)) {
+            IO.println("Текущая таблица:");
+
+            int pivotRow = findPivotRow(table);
+            int pivotCol = findPivotCol(table, pivotRow);
+
+            if (pivotCol == -1) {
+                IO.println("Задача не имеет допустимых решений (область пуста).");
+                return;
+            }
+
+            IO.println("Разрешающий элемент: [" + pivotRow + "][" + pivotCol + "] = " + table[pivotRow][pivotCol]);
+
+            table = gaussStep(table, pivotRow, pivotCol);
+            basis[pivotRow] = pivotCol;
+        }
+
+        IO.println("Решение найдено!");
+        IO.println(Arrays.deepToString(table));
+        IO.println("Базис: " + Arrays.toString(basis));
     }
 
     private int[] findBasis(Fraction[][] matrix) {
@@ -137,5 +155,43 @@ public class DualSimplexSolver {
         }
 
         return false;
+    }
+
+    private int findPivotRow(Fraction[][] table) {
+        int rows = table.length - 1;
+        int bColIndex = table[0].length - 1;
+        int pivotRow = -1;
+        Fraction minB = Fraction.of(0);
+
+        for (int row = 0; row < rows; row++) {
+            Fraction bValue = table[row][bColIndex];
+            if (bValue.isNegative() && bValue.absCompareTo(minB) > 0) {
+                minB = bValue;
+                pivotRow = row;
+            }
+        }
+
+        return pivotRow;
+    }
+
+    private int findPivotCol(Fraction[][] table, int pivotRow) {
+        int zRowIndex = table.length - 1;
+        int cols = table[0].length - 1;
+        int pivotCol = -1;
+        Fraction minRatio = null;
+        for (int col = 0; col < cols; col++) {
+            Fraction rowValue = table[pivotRow][col];
+            if (!rowValue.isNegative()) {
+                continue;
+            }
+            Fraction zValue = table[zRowIndex][col];
+            Fraction ratio = zValue.divide(rowValue);
+            if (pivotCol == -1 || ratio.absCompareTo(minRatio) < 0) {
+                minRatio = ratio;
+                pivotCol = col;
+            }
+        }
+
+        return pivotCol;
     }
 }
