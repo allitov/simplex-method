@@ -2,8 +2,11 @@ package io.allitov.dsm.algorithm;
 
 import io.allitov.dsm.model.Fraction;
 import io.allitov.dsm.model.Problem;
+import io.allitov.dsm.util.LogWriter;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Реализация двойственного симплекс-метода.
@@ -17,37 +20,50 @@ public class DualSimplexSolver {
      */
     public void solve(Problem problem) {
         int[] basis = findBasis(problem.constraints());
-        IO.println("Basis: " + Arrays.toString(basis));
+        LogWriter.printMessage("Базис: " + Arrays.toString(Arrays.stream(basis).map(i -> i + 1).toArray()));
 
         Fraction[][] table = prepareTable(problem, basis);
-        IO.println("Table: " + Arrays.deepToString(table));
+        LogWriter.printMessage("Начальная симплекс-таблица:");
+        LogWriter.printTable(table, basis, null);
 
         if (!isDualFeasible(table)) {
-            IO.println("Ошибка: Задача не является двойственно допустимой.");
+            LogWriter.printMessage("Ошибка: Задача не является двойственно допустимой.");
             return;
         }
 
-        IO.println("Условия соблюдены. Алгоритм применим.");
+        LogWriter.printMessage("Задача двойственно допустимая.");
 
+        int iteration = 1;
         while (hasNegativeB(table)) {
-            IO.println("Текущая таблица:");
+            LogWriter.printHeader("Таблица №" + iteration++);
 
             int pivotRow = findPivotRow(table);
+            Map<Integer, Fraction> ratios = new HashMap<>();
+            int zRow = table.length - 1;
+            for (int j = 0; j < table[0].length - 1; j++) {
+                if (table[pivotRow][j].isNegative()) {
+                    ratios.put(j, table[zRow][j].divide(table[pivotRow][j]));
+                }
+            }
+            LogWriter.printTable(table, basis, ratios);
+
             int pivotCol = findPivotCol(table, pivotRow);
 
             if (pivotCol == -1) {
-                IO.println("Задача не имеет допустимых решений (область пуста).");
+                LogWriter.printMessage("Задача не имеет допустимых решений.");
                 return;
             }
 
-            IO.println("Разрешающий элемент: [" + pivotRow + "][" + pivotCol + "] = " + table[pivotRow][pivotCol]);
+            LogWriter.printMessage("Разрешающий элемент: [" + (pivotRow + 1) + ", " + (pivotCol + 1) + "]");
+            LogWriter.printMessage("В базис входит x" + (pivotCol + 1) + " вместо x" + (basis[pivotRow] + 1));
 
             table = gaussStep(table, pivotRow, pivotCol);
             basis[pivotRow] = pivotCol;
         }
-
-        IO.println("Решение найдено!");
-        printResult("Решение 1", table, basis);
+        LogWriter.printHeader("Таблица №" + iteration);
+        LogWriter.printTable(table, basis, null);
+        LogWriter.printMessage("Оптимальное решение найдено.");
+        LogWriter.printResult("Результат", table, basis);
 
         checkForAlternativeSolutions(table, basis);
     }
@@ -190,29 +206,6 @@ public class DualSimplexSolver {
         return pivotCol;
     }
 
-    /**
-     * Извлекает значения переменных из таблицы и выводит их.
-     */
-    private void printResult(String label, Fraction[][] table, int[] basis) {
-        int rows = table.length - 1;
-        int cols = table[0].length - 1;
-        Fraction[] result = new Fraction[cols];
-        for (int i = 0; i < cols; i++) result[i] = Fraction.of(0);
-
-        for (int i = 0; i < rows; i++) {
-            if (basis[i] != -1 && basis[i] < cols) {
-                result[basis[i]] = table[i][cols];
-            }
-        }
-
-        IO.println(label + ":");
-        for (int i = 0; i < result.length; i++) {
-            IO.println("x" + (i + 1) + " = " + result[i]);
-        }
-        IO.println("Z = " + table[rows][cols]);
-        IO.println("-------------------------");
-    }
-
     private void checkForAlternativeSolutions(Fraction[][] table, int[] basis) {
         int zRowIndex = table.length - 1;
         int cols = table[0].length - 1;
@@ -226,7 +219,7 @@ public class DualSimplexSolver {
                 }
             }
             if (!isBasis && table[zRowIndex][col].isPositive()) {
-                IO.println("Обнаружено бесконечное множество решений. Находим альтернативное...");
+                LogWriter.printMessage("Обнаружено бесконечное множество решений. Поиск альтернативного.");
                 int pivotRow = -1;
                 for (int i = 0; i < table.length - 1; i++) {
                     if (table[i][col].isPositive()) {
@@ -239,10 +232,10 @@ public class DualSimplexSolver {
                     Fraction[][] altTable = gaussStep(table, pivotRow, col);
                     int[] altBasis = basis.clone();
                     altBasis[pivotRow] = col;
-                    printResult("Решение 2 (альтернативное)", altTable, altBasis);
+                    LogWriter.printResult("Решение 2 (альтернативное)", altTable, altBasis);
                     return;
                 } else {
-                    IO.println("Область допустимых решений не ограничена.");
+                    LogWriter.printMessage("Область допустимых решений не ограничена.");
                 }
             }
         }
