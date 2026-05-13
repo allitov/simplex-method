@@ -152,6 +152,15 @@ public class Fraction {
         return numerator.signum() == -1;
     }
 
+    /**
+     * ПРоверить, что простая дробь положительная.
+     *
+     * @return {@code true} если числитель положительный; иначе {@code false}.
+     */
+    public boolean isPositive() {
+        return numerator.signum() == 1;
+    }
+
     @Override
     public String toString() {
         return denominator.equals(BigInteger.ONE) ? numerator.toString() : numerator + "/" + denominator;

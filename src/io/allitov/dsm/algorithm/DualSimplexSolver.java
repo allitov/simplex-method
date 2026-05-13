@@ -27,12 +27,6 @@ public class DualSimplexSolver {
             return;
         }
 
-        if (!hasNegativeB(table)) {
-            IO.println("Решение уже оптимально, итерации не требуются.");
-            // todo: вывести результат
-            return;
-        }
-
         IO.println("Условия соблюдены. Алгоритм применим.");
 
         while (hasNegativeB(table)) {
@@ -53,8 +47,9 @@ public class DualSimplexSolver {
         }
 
         IO.println("Решение найдено!");
-        IO.println(Arrays.deepToString(table));
-        IO.println("Базис: " + Arrays.toString(basis));
+        printResult("Решение 1", table, basis);
+
+        checkForAlternativeSolutions(table, basis);
     }
 
     private int[] findBasis(Fraction[][] matrix) {
@@ -193,5 +188,63 @@ public class DualSimplexSolver {
         }
 
         return pivotCol;
+    }
+
+    /**
+     * Извлекает значения переменных из таблицы и выводит их.
+     */
+    private void printResult(String label, Fraction[][] table, int[] basis) {
+        int rows = table.length - 1;
+        int cols = table[0].length - 1;
+        Fraction[] result = new Fraction[cols];
+        for (int i = 0; i < cols; i++) result[i] = Fraction.of(0);
+
+        for (int i = 0; i < rows; i++) {
+            if (basis[i] != -1 && basis[i] < cols) {
+                result[basis[i]] = table[i][cols];
+            }
+        }
+
+        IO.println(label + ":");
+        for (int i = 0; i < result.length; i++) {
+            IO.println("x" + (i + 1) + " = " + result[i]);
+        }
+        IO.println("Z = " + table[rows][cols]);
+        IO.println("-------------------------");
+    }
+
+    private void checkForAlternativeSolutions(Fraction[][] table, int[] basis) {
+        int zRowIndex = table.length - 1;
+        int cols = table[0].length - 1;
+
+        for (int col = 0; col < cols; col++) {
+            boolean isBasis = false;
+            for (int b : basis) {
+                if (b == col) {
+                    isBasis = true;
+                    break;
+                }
+            }
+            if (!isBasis && table[zRowIndex][col].isPositive()) {
+                IO.println("Обнаружено бесконечное множество решений. Находим альтернативное...");
+                int pivotRow = -1;
+                for (int i = 0; i < table.length - 1; i++) {
+                    if (table[i][col].isPositive()) {
+                        pivotRow = i;
+                        break;
+                    }
+                }
+
+                if (pivotRow != -1) {
+                    Fraction[][] altTable = gaussStep(table, pivotRow, col);
+                    int[] altBasis = basis.clone();
+                    altBasis[pivotRow] = col;
+                    printResult("Решение 2 (альтернативное)", altTable, altBasis);
+                    return;
+                } else {
+                    IO.println("Область допустимых решений не ограничена.");
+                }
+            }
+        }
     }
 }
